@@ -1,11 +1,11 @@
-use near_sdk::{log, near};
 use near_sdk::json_types::U64;
+use near_sdk::{log, near};
 
 #[near(serializers = [json, borsh])]
 #[derive(PartialEq, Debug)]
 enum EventType {
     Class,
-    Party
+    Party,
 }
 
 #[near(serializers = [json, borsh])]
@@ -14,7 +14,7 @@ enum EventLevel {
     Beginner,
     Intermediate,
     Advanced,
-    Teacher
+    Teacher,
 }
 
 #[near(serializers = [json, borsh])]
@@ -27,7 +27,7 @@ pub struct Event {
     location: String,
     r#type: EventType,
     instructor: String,
-    level: EventLevel
+    level: EventLevel,
 }
 
 #[near(serializers = [json, borsh])]
@@ -39,14 +39,14 @@ pub struct EventInput {
     location: String,
     r#type: EventType,
     instructor: String,
-    level: EventLevel
+    level: EventLevel,
 }
 
 #[near(contract_state)]
 pub struct Contract {
     greeting: String,
     events: Vec<Event>,
-    next_event_id: u16
+    next_event_id: u16,
 }
 
 impl Default for Contract {
@@ -72,7 +72,7 @@ impl Contract {
 
     pub fn add_event(&mut self, event: EventInput) -> u16 {
         log!("Adding new event: {}", event.title);
-        
+
         let new_event = Event {
             id: self.next_event_id,
             title: event.title,
@@ -84,9 +84,9 @@ impl Contract {
             instructor: event.instructor,
             level: event.level,
         };
-        
+
         self.next_event_id += 1;
-        
+
         self.events.push(new_event);
         self.next_event_id - 1
     }

@@ -27,20 +27,25 @@ async fn test_should_store_event_when_event_is_added() -> Result<(), Box<dyn std
         .deposit(NearToken::from_yoctonear(0))
         .transact()
         .await?;
-    
-    assert!(outcome.is_success(), "Failed to add event: {:#?}", outcome.into_result().unwrap_err());
-    
+
+    assert!(
+        outcome.is_success(),
+        "Failed to add event: {:#?}",
+        outcome.into_result().unwrap_err()
+    );
+
     let events_outcome = contract.view("get_events").args_json(json!({})).await?;
     let events: Vec<serde_json::Value> = events_outcome.json()?;
     assert_eq!(events.len(), 1);
     assert_eq!(events[0]["title"], "Rust Workshop");
     assert_eq!(events[0]["id"], 1);
-    
+
     Ok(())
 }
 
 #[tokio::test]
-async fn test_should_store_multiple_events_in_order_when_events_are_added() -> Result<(), Box<dyn std::error::Error>> {
+async fn test_should_store_multiple_events_in_order_when_events_are_added(
+) -> Result<(), Box<dyn std::error::Error>> {
     let contract_wasm = near_workspaces::compile_project("./").await?;
     let sandbox = near_workspaces::sandbox().await?;
     let contract = sandbox.dev_deploy(&contract_wasm).await?;
@@ -71,20 +76,22 @@ async fn test_should_store_multiple_events_in_order_when_events_are_added() -> R
         }
     });
 
-    let _ = contract.call("add_event")
+    let _ = contract
+        .call("add_event")
         .args_json(event1)
         .max_gas()
         .deposit(NearToken::from_yoctonear(0))
         .transact()
         .await?;
-        
-    let _ = contract.call("add_event")
+
+    let _ = contract
+        .call("add_event")
         .args_json(event2)
         .max_gas()
         .deposit(NearToken::from_yoctonear(0))
         .transact()
         .await?;
-    
+
     let events_outcome = contract.view("get_events").args_json(json!({})).await?;
     let events: Vec<serde_json::Value> = events_outcome.json()?;
     assert_eq!(events.len(), 2);
@@ -92,6 +99,6 @@ async fn test_should_store_multiple_events_in_order_when_events_are_added() -> R
     assert_eq!(events[0]["id"], 1);
     assert_eq!(events[1]["title"], "Event 2");
     assert_eq!(events[1]["id"], 2);
-    
+
     Ok(())
 }
