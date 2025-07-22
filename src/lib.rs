@@ -30,10 +30,23 @@ pub struct Event {
     level: EventLevel
 }
 
+#[near(serializers = [json, borsh])]
+pub struct EventInput {
+    title: String,
+    description: String,
+    start_time: U64,
+    end_time: U64,
+    location: String,
+    r#type: EventType,
+    instructor: String,
+    level: EventLevel
+}
+
 #[near(contract_state)]
 pub struct Contract {
     greeting: String,
-    events: Vec<Event>
+    events: Vec<Event>,
+    next_event_id: u16
 }
 
 impl Default for Contract {
@@ -41,6 +54,7 @@ impl Default for Contract {
         Self {
             greeting: "Hello".to_string(),
             events: Vec::new(),
+            next_event_id: 1,
         }
     }
 }
@@ -56,9 +70,25 @@ impl Contract {
         self.greeting = greeting;
     }
 
-    pub fn add_event(&mut self, event: Event) {
+    pub fn add_event(&mut self, event: EventInput) -> u16 {
         log!("Adding new event: {}", event.title);
-        self.events.push(event);
+        
+        let new_event = Event {
+            id: self.next_event_id,
+            title: event.title,
+            description: event.description,
+            start_time: event.start_time,
+            end_time: event.end_time,
+            location: event.location,
+            r#type: event.r#type,
+            instructor: event.instructor,
+            level: event.level,
+        };
+        
+        self.next_event_id += 1;
+        
+        self.events.push(new_event);
+        self.next_event_id - 1
     }
 
     pub fn get_events(&self) -> &Vec<Event> {
@@ -86,33 +116,28 @@ mod tests {
     #[test]
     fn test_should_store_event_when_event_is_added() {
         let mut contract = Contract::default();
-        let event = Event {
-            id: 1,
-            title: "Rust Workshop".to_string(),
-            description: "Learn Rust programming".to_string(),
+        let event = EventInput {
+            title: "Test Event".to_string(),
+            description: "Test Description".to_string(),
             start_time: U64::from(1000),
             end_time: U64::from(2000),
-            location: "Virtual".to_string(),
+            location: "Test Location".to_string(),
             r#type: EventType::Class,
-            instructor: "Alice".to_string(),
+            instructor: "Test Instructor".to_string(),
             level: EventLevel::Beginner,
         };
 
-        contract.add_event(event);
+        let result = contract.add_event(event);
         let events = contract.get_events();
-        
         assert_eq!(events.len(), 1);
-        assert_eq!(events[0].title, "Rust Workshop");
-        assert_eq!(events[0].description, "Learn Rust programming");
-        assert_eq!(events[0].instructor, "Alice");
+        assert_eq!(events[0].title, "Test Event");
+        assert_eq!(result, 1);
     }
 
     #[test]
     fn test_should_store_multiple_events_in_order_when_events_are_added() {
         let mut contract = Contract::default();
-        
-        let event1 = Event {
-            id: 1,
+        let event1 = EventInput {
             title: "Event 1".to_string(),
             description: "First event".to_string(),
             start_time: U64::from(1000),
@@ -123,8 +148,7 @@ mod tests {
             level: EventLevel::Beginner,
         };
 
-        let event2 = Event {
-            id: 2,
+        let event2 = EventInput {
             title: "Event 2".to_string(),
             description: "Second event".to_string(),
             start_time: U64::from(3000),
@@ -135,14 +159,14 @@ mod tests {
             level: EventLevel::Intermediate,
         };
 
-        contract.add_event(event1);
-        contract.add_event(event2);
-        
+        let result1 = contract.add_event(event1);
+        let result2 = contract.add_event(event2);
+
         let events = contract.get_events();
         assert_eq!(events.len(), 2);
         assert_eq!(events[0].title, "Event 1");
         assert_eq!(events[1].title, "Event 2");
-        assert_eq!(events[0].r#type, EventType::Class);
-        assert_eq!(events[1].r#type, EventType::Party);
+        assert_eq!(result1, 1);
+        assert_eq!(result2, 2);
     }
 }

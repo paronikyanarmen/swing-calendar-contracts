@@ -9,7 +9,6 @@ async fn test_should_store_event_when_event_is_added() -> Result<(), Box<dyn std
 
     let event = json!({
         "event": {
-            "id": 1,
             "title": "Rust Workshop",
             "description": "Learn Rust programming",
             "start_time": "1000",
@@ -35,6 +34,7 @@ async fn test_should_store_event_when_event_is_added() -> Result<(), Box<dyn std
     let events: Vec<serde_json::Value> = events_outcome.json()?;
     assert_eq!(events.len(), 1);
     assert_eq!(events[0]["title"], "Rust Workshop");
+    assert_eq!(events[0]["id"], 1);
     
     Ok(())
 }
@@ -47,7 +47,6 @@ async fn test_should_store_multiple_events_in_order_when_events_are_added() -> R
 
     let event1 = json!({
         "event": {
-            "id": 1,
             "title": "Event 1",
             "description": "First event",
             "start_time": "1000",
@@ -61,7 +60,6 @@ async fn test_should_store_multiple_events_in_order_when_events_are_added() -> R
 
     let event2 = json!({
         "event": {
-            "id": 2,
             "title": "Event 2",
             "description": "Second event",
             "start_time": "3000",
@@ -91,7 +89,9 @@ async fn test_should_store_multiple_events_in_order_when_events_are_added() -> R
     let events: Vec<serde_json::Value> = events_outcome.json()?;
     assert_eq!(events.len(), 2);
     assert_eq!(events[0]["title"], "Event 1");
+    assert_eq!(events[0]["id"], 1);
     assert_eq!(events[1]["title"], "Event 2");
+    assert_eq!(events[1]["id"], 2);
     
     Ok(())
 }
