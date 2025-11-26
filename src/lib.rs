@@ -43,16 +43,14 @@ pub struct EventInput {
 }
 
 #[near(contract_state)]
-pub struct Contract {
-    greeting: String,
+pub struct SwingCalendar {
     events: Vec<Event>,
     next_event_id: u16,
 }
 
-impl Default for Contract {
+impl Default for SwingCalendar {
     fn default() -> Self {
         Self {
-            greeting: "Hello".to_string(),
             events: Vec::new(),
             next_event_id: 1,
         }
@@ -60,16 +58,7 @@ impl Default for Contract {
 }
 
 #[near]
-impl Contract {
-    pub fn get_greeting(&self) -> String {
-        self.greeting.clone()
-    }
-
-    pub fn set_greeting(&mut self, greeting: String) {
-        log!("Saving greeting: {greeting}");
-        self.greeting = greeting;
-    }
-
+impl SwingCalendar {
     pub fn add_event(&mut self, event: EventInput) -> u16 {
         log!("Adding new event: {}", event.title);
 
@@ -101,21 +90,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_should_return_default_greeting_when_no_greeting_is_set() {
-        let contract = Contract::default();
-        assert_eq!(contract.get_greeting(), "Hello");
-    }
-
-    #[test]
-    fn test_should_set_and_get_greeting_when_greeting_is_updated() {
-        let mut contract = Contract::default();
-        contract.set_greeting("howdy".to_string());
-        assert_eq!(contract.get_greeting(), "howdy");
-    }
-
-    #[test]
     fn test_should_store_event_when_event_is_added() {
-        let mut contract = Contract::default();
+        let mut contract = SwingCalendar::default();
         let event = EventInput {
             title: "Test Event".to_string(),
             description: "Test Description".to_string(),
@@ -136,7 +112,7 @@ mod tests {
 
     #[test]
     fn test_should_store_multiple_events_in_order_when_events_are_added() {
-        let mut contract = Contract::default();
+        let mut contract = SwingCalendar::default();
         let event1 = EventInput {
             title: "Event 1".to_string(),
             description: "First event".to_string(),
